@@ -110,6 +110,7 @@ static NTSTATUS  (WINAPI *pLdrUnregisterDllNotification)(void *);
 static void      (WINAPI *pRtlRbInsertNodeEx)(RTL_RB_TREE *, RTL_BALANCED_NODE *, BOOLEAN, RTL_BALANCED_NODE *);
 static void      (WINAPI *pRtlRbRemoveNode)(RTL_RB_TREE *, RTL_BALANCED_NODE *);
 
+static VOID      (WINAPI *pRtlGetDeviceFamilyInfoEnum)(ULONGLONG *,DWORD *,DWORD *);
 
 static HMODULE hkernel32 = 0;
 static BOOL      (WINAPI *pIsWow64Process)(HANDLE, PBOOL);
@@ -155,6 +156,7 @@ static void InitFunctionPtrs(void)
         pLdrUnregisterDllNotification = (void *)GetProcAddress(hntdll, "LdrUnregisterDllNotification");
         pRtlRbInsertNodeEx = (void *)GetProcAddress(hntdll, "RtlRbInsertNodeEx");
         pRtlRbRemoveNode = (void *)GetProcAddress(hntdll, "RtlRbRemoveNode");
+        pRtlGetDeviceFamilyInfoEnum = (void *)GetProcAddress(hntdll, "RtlGetDeviceFamilyInfoEnum");
     }
     hkernel32 = LoadLibraryA("kernel32.dll");
     ok(hkernel32 != 0, "LoadLibrary failed\n");
@@ -3820,6 +3822,25 @@ static void test_rb_tree(void)
     ok( !rtl_tree.root, "got %p.\n", rtl_tree.root );
     ok( !rtl_tree.min, "got %p.\n", rtl_tree.min );
     free(nodes);
+static void test_RtlGetDeviceFamilyInfoEnum(void)
+{
+    ULONGLONG version;
+    DWORD family, form;
+
+    if (!pRtlGetDeviceFamilyInfoEnum)
+    {
+        win_skip( "RtlGetDeviceFamilyInfoEnum is not present\n" );
+        return;
+    }
+
+    version = 0x1234567;
+    family = 1234567;
+    form = 1234567;
+    pRtlGetDeviceFamilyInfoEnum(&version, &family, &form);
+    ok( version != 0x1234567, "got unexpected unchanged value 0x1234567\n" );
+    ok( family <= DEVICEFAMILYINFOENUM_MAX, "got unexpected %lu\n", family );
+    ok( form <= DEVICEFAMILYDEVICEFORM_MAX, "got unexpected %lu\n", form );
+    trace( "UAP version is %#I64x, device family is %lu, form factor is %lu\n", version, family, form );
 }
 
 START_TEST(rtl)
@@ -3870,4 +3891,5 @@ START_TEST(rtl)
     test_RtlValidSecurityDescriptor();
     test_RtlFindExportedRoutineByName();
     test_rb_tree();
+    test_RtlGetDeviceFamilyInfoEnum();
 }

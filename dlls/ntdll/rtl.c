@@ -2367,3 +2367,15 @@ char WINAPI RtlQueryProcessPlaceholderCompatibilityMode(void)
     FIXME("stub\n");
     return PHCM_APPLICATION_DEFAULT;
 }
+
+/*********************************************************************
+ *           RtlGetDeviceFamilyInfoEnum [NTDLL.@]
+ */
+void WINAPI RtlGetDeviceFamilyInfoEnum(ULONGLONG *version, DWORD *family, DWORD *form)
+{
+    FIXME("%p %p %p: stub\n", version, family, form);
+
+    if (version) *version = 0;
+    if (family) *family = DEVICEFAMILYINFOENUM_DESKTOP;
+    if (form) *form = DEVICEFAMILYDEVICEFORM_UNKNOWN;
+}
