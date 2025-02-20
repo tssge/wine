@@ -4431,11 +4431,12 @@ CONFIGRET WINAPI CM_Locate_DevNode_ExW(DEVINST *devinst, DEVINSTID_W device_id, 
 
 static CONFIGRET get_device_id_list(const WCHAR *filter, WCHAR *buffer, ULONG *len, ULONG flags)
 {
-    const ULONG supported_flags = CM_GETIDLIST_FILTER_NONE | CM_GETIDLIST_FILTER_CLASS;
+    const ULONG supported_flags = CM_GETIDLIST_FILTER_NONE | CM_GETIDLIST_FILTER_CLASS | CM_GETIDLIST_FILTER_PRESENT;
     SP_DEVINFO_DATA device = { sizeof(device) };
     CONFIGRET ret = CR_SUCCESS;
     GUID guid, *pguid = NULL;
     unsigned int i, id_len;
+    ULONG query_flags = 0;
     HDEVINFO set;
     WCHAR id[64];
     ULONG needed;
@@ -4470,7 +4471,12 @@ static CONFIGRET get_device_id_list(const WCHAR *filter, WCHAR *buffer, ULONG *l
     if (!buffer)
         *len = needed;
 
-    set = SetupDiGetClassDevsW(pguid, NULL, NULL, pguid ? 0 : DIGCF_ALLCLASSES);
+    if (!pguid)
+        query_flags |= DIGCF_ALLCLASSES;
+    if (flags & CM_GETIDLIST_FILTER_PRESENT)
+        query_flags |= DIGCF_PRESENT;
+
+    set = SetupDiGetClassDevsW(pguid, NULL, NULL, query_flags);
     if (set == INVALID_HANDLE_VALUE)
         return CR_SUCCESS;
 
