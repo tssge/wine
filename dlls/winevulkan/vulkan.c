@@ -973,6 +973,25 @@ VkResult wine_vkAllocateCommandBuffers(VkDevice handle, const VkCommandBufferAll
     return res;
 }
 
+static void filter_duplicate_structures(const VkBaseInStructure **in)
+{
+    const VkBaseInStructure *h;
+    VkBaseInStructure **h2;
+
+    for (h = *in; h; h = h->pNext)
+    {
+        for (h2 = (VkBaseInStructure **)in; *h2 != h; h2 = (VkBaseInStructure **)&(*h2)->pNext)
+        {
+            if ((*h2)->sType == h->sType)
+            {
+                ERR("Duplicate sType %d in the chain, keeping the last.\n", h->sType);
+                *h2 = (VkBaseInStructure *)(*h2)->pNext;
+                break;
+            }
+        }
+    }
+}
+
 VkResult wine_vkCreateDevice(VkPhysicalDevice phys_dev_handle, const VkDeviceCreateInfo *create_info,
                              const VkAllocationCallbacks *allocator, VkDevice *ret_device,
                              void *client_ptr)
@@ -991,6 +1010,8 @@ VkResult wine_vkCreateDevice(VkPhysicalDevice phys_dev_handle, const VkDeviceCre
     PFN_native_vkCreateDevice native_create_device = NULL;
     void *native_create_device_context = NULL;
     VkCreateInfoWineDeviceCallback *callback;
+
+    filter_duplicate_structures((const VkBaseInStructure **)&create_info);
 
     if (allocator)
         FIXME("Support for allocation callbacks not implemented yet\n");
