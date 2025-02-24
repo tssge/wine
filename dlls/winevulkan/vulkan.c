@@ -980,6 +980,10 @@ static void filter_duplicate_structures(const VkBaseInStructure **in)
 
     for (h = *in; h; h = h->pNext)
     {
+        if (h->sType == 1000284001 /*VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT*/
+                || h->sType == VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO)
+            continue;
+
         for (h2 = (VkBaseInStructure **)in; *h2 != h; h2 = (VkBaseInStructure **)&(*h2)->pNext)
         {
             if ((*h2)->sType == h->sType)
