@@ -1994,6 +1994,17 @@ void x11drv_xinput2_load(void)
 #endif
 }
 
+static BOOL skip_mouse_from_touch(void)
+{
+    static int cached = -1;
+    const char *sgi;
+
+    if (cached == -1)
+        cached = (sgi = getenv( "SteamGameId" )) && !strcmp( sgi, "275850" );
+
+    return cached;
+}
+
 static BOOL X11DRV_RawTouchEvent( XGenericEventCookie *xev )
 {
     struct x11drv_thread_data *thread_data = x11drv_thread_data();
@@ -2048,7 +2059,7 @@ static BOOL X11DRV_RawTouchEvent( XGenericEventCookie *xev )
     rawinput.data.mouse.ulRawButtons = MAKELONG( event->detail, flags );
 
     __wine_send_input( 0, &input, &rawinput );
-    if (!(flags & POINTER_MESSAGE_FLAG_PRIMARY)) return TRUE;
+    if (!(flags & POINTER_MESSAGE_FLAG_PRIMARY) || skip_mouse_from_touch()) return TRUE;
 
     input.type             = INPUT_MOUSE;
     input.mi.mouseData   = 0;
