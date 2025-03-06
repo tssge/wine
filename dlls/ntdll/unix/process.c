@@ -720,7 +720,7 @@ NTSTATUS WINAPI NtCreateUserProcess( HANDLE *process_handle_ptr, HANDLE *thread_
 {
     unsigned int status;
     BOOL success = FALSE;
-    HANDLE file_handle, process_info = 0, process_handle = 0, thread_handle = 0;
+    HANDLE file_handle, process_info = 0, process_handle = 0, thread_handle = 0, temp_handle;
     struct object_attributes *objattr;
     data_size_t attr_len;
     char *winedebug = NULL;
@@ -890,9 +890,17 @@ NTSTATUS WINAPI NtCreateUserProcess( HANDLE *process_handle_ptr, HANDLE *thread_
 
     if ((status = alloc_object_attributes( thread_attr, &objattr, &attr_len ))) goto done;
 
+    if (process_access & (MAXIMUM_ALLOWED | PROCESS_CREATE_THREAD)) temp_handle = process_handle;
+    else
+    {
+        if ((status = NtDuplicateObject( GetCurrentProcess(), process_handle, GetCurrentProcess(), &temp_handle,
+                                         MAXIMUM_ALLOWED, 0, 0 )))
+            goto done;
+    }
+
     SERVER_START_REQ( new_thread )
     {
-        req->process    = wine_server_obj_handle( process_handle );
+        req->process    = wine_server_obj_handle( temp_handle );
         req->access     = thread_access;
         req->flags      = thread_flags;
         req->request_fd = -1;
@@ -905,6 +913,7 @@ NTSTATUS WINAPI NtCreateUserProcess( HANDLE *process_handle_ptr, HANDLE *thread_
     }
     SERVER_END_REQ;
     free( objattr );
+    if (temp_handle != process_handle) NtClose( temp_handle );
     if (status) goto done;
 
     /* create the child process */
