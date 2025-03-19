@@ -86,7 +86,7 @@ BOOL client_side_with_render = TRUE;
 BOOL shape_layered_windows = TRUE;
 int copy_default_colors = 128;
 int alloc_system_colors = 256;
-int limit_number_of_resolutions = 0;
+unsigned int limit_number_of_resolutions;
 int xrender_error_base = 0;
 int xfixes_event_base = 0;
 char *process_name = NULL;
@@ -547,8 +547,15 @@ static void setup_options(void)
     if (!get_config_key( hkey, appkey, "AllocSystemColors", buffer, sizeof(buffer) ))
         alloc_system_colors = wcstol( buffer, NULL, 0 );
 
-    if (!get_config_key( hkey, appkey, "LimitNumberOfResolutions", buffer, sizeof(buffer) ))
-        limit_number_of_resolutions = wcstol( buffer, NULL, 0 );
+    {
+        const char *s;
+
+        if ((s = getenv( "PROTON_LIMIT_RESOLUTIONS" )))
+        {
+            limit_number_of_resolutions = atoi( s );
+            ERR( "HACK: limit_number_of_resolutions %u.\n", limit_number_of_resolutions );
+        }
+    }
 
     get_config_key( hkey, appkey, "InputStyle", input_style, sizeof(input_style) );
 

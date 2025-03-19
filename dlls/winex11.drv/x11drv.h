@@ -464,7 +464,7 @@ extern WNDPROC client_foreign_window_proc;
 extern HANDLE steam_overlay_event;
 extern HANDLE steam_keyboard_event;
 
-extern int limit_number_of_resolutions;
+extern unsigned int limit_number_of_resolutions;
 
 /* atoms */
 
