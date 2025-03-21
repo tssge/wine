@@ -1709,7 +1709,7 @@ DECL_HANDLER(init_thread)
 
     init_thread_context( current );
     generate_debug_event( current, DbgCreateThreadStateChange, &req->entry );
-    set_thread_priority( current, current->process->priority, current->priority );
+    apply_thread_priority( current, current->process->priority, current->priority );
     set_thread_affinity( current, current->affinity );
 
     reply->suspend = (current->suspend || current->process->suspend || current->context != NULL);
