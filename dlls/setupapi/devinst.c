@@ -4770,7 +4770,7 @@ CONFIGRET WINAPI CM_Get_Device_Interface_List_ExA(LPGUID class, DEVINSTID_A id, 
     if (id)
     {
         slen = strlen(id) + 1;
-        if (!(wid = malloc(slen * sizeof(*id))))
+        if (!(wid = malloc(slen * sizeof(*wid))))
         {
             free(wbuffer);
             return CR_OUT_OF_MEMORY;
