@@ -96,7 +96,9 @@
 #include "request.h"
 #include "esync.h"
 #include "fsync.h"
+#ifdef HAVE_IO_URING
 #include "io_uring.h"
+#endif
 
 #include "winternl.h"
 #include "winioctl.h"
@@ -976,8 +978,10 @@ void main_loop(void)
         set_current_time();
 
         /* Process io_uring completions */
+#ifdef HAVE_IO_URING
         if (io_uring_available())
             io_uring_process_events();
+#endif
 
         if (ret > 0)
         {
