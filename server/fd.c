@@ -96,6 +96,7 @@
 #include "request.h"
 #include "esync.h"
 #include "fsync.h"
+#include "io_uring.h"
 
 #include "winternl.h"
 #include "winioctl.h"
@@ -973,6 +974,10 @@ void main_loop(void)
 
         ret = poll( pollfd, nb_users, timeout );
         set_current_time();
+
+        /* Process io_uring completions */
+        if (io_uring_available())
+            io_uring_process_events();
 
         if (ret > 0)
         {

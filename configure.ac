@@ -42,6 +42,7 @@ AC_ARG_WITH(gnutls,    AS_HELP_STRING([--without-gnutls],[do not use GnuTLS (sch
 AC_ARG_WITH(gssapi,    AS_HELP_STRING([--without-gssapi],[do not use GSSAPI (Kerberos SSP support)]))
 AC_ARG_WITH(gstreamer, AS_HELP_STRING([--without-gstreamer],[do not use GStreamer (codecs support)]))
 AC_ARG_WITH(inotify,   AS_HELP_STRING([--without-inotify],[do not use inotify (filesystem change notifications)]))
+AC_ARG_WITH(io-uring,  AS_HELP_STRING([--without-io-uring],[do not use io_uring (high-performance async I/O)]))
 AC_ARG_WITH(krb5,      AS_HELP_STRING([--without-krb5],[do not use krb5 (Kerberos)]))
 AC_ARG_WITH(mingw,     AS_HELP_STRING([--without-mingw],[do not use the MinGW cross-compiler]))
 AC_ARG_WITH(netapi,    AS_HELP_STRING([--without-netapi],[do not use the Samba NetAPI library]))
@@ -416,6 +417,7 @@ AC_CHECK_HEADERS(\
 	sys/cdio.h \
 	sys/epoll.h \
 	sys/event.h \
+	linux/io_uring.h \
 	sys/eventfd.h \
 	sys/extattr.h \
 	sys/filio.h \
@@ -1449,6 +1451,20 @@ then
 fi
 WINE_NOTICE_WITH(inotify,[test "$ac_cv_header_sys_inotify_h" != "yes"],
                  [libinotify ${notice_platform}development files not found (or too old), filesystem change notifications won't be supported.])
+
+dnl **** Check for io_uring ****
+if test "x$with_io_uring" != "xno"
+then
+    if test "$ac_cv_header_linux_io_uring_h" = "yes"
+    then
+        AC_DEFINE(HAVE_IO_URING, 1, [Define to 1 if you have the io_uring header and syscalls.])
+        WINE_NOTICE([io_uring support enabled for high-performance async I/O.])
+    else
+        WINE_NOTICE([io_uring headers not found, high-performance async I/O won't be supported.])
+    fi
+else
+    WINE_NOTICE([io_uring support disabled by user.])
+fi
 
 dnl **** Check for libdbus ****
 if test "x$with_dbus" != "xno"

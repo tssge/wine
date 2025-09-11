@@ -59,6 +59,7 @@
 #include "request.h"
 #include "process.h"
 #include "security.h"
+#include "io_uring.h"
 
 static const WCHAR file_name[] = {'F','i','l','e'};
 

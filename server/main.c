@@ -37,6 +37,8 @@
 #include "security.h"
 #include "esync.h"
 #include "fsync.h"
+#include "io_uring.h"
+#include "io_uring_file.h"
 
 /* command-line options */
 int debug_level = 0;
@@ -240,6 +242,12 @@ int main( int argc, char *argv[] )
 
     if (!do_fsync() && !do_esync())
         fprintf( stderr, "wineserver: using server-side synchronization.\n" );
+
+    /* Initialize io_uring if available */
+    if (io_uring_init()) {
+        fprintf( stderr, "wineserver: using io_uring for high-performance I/O.\n" );
+        io_uring_file_init();
+    }
 
     if (debug_level) fprintf( stderr, "wineserver: starting (pid=%ld)\n", (long) getpid() );
     set_current_time();
