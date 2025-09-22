@@ -18,6 +18,7 @@ SOURCES = \
 	fsync.c \
 	handle.c \
 	hook.c \
+	io_uring.c \
 	mach.c \
 	mailslot.c \
 	main.c \

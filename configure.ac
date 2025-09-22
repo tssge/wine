@@ -42,6 +42,7 @@ AC_ARG_WITH(gnutls,    AS_HELP_STRING([--without-gnutls],[do not use GnuTLS (sch
 AC_ARG_WITH(gssapi,    AS_HELP_STRING([--without-gssapi],[do not use GSSAPI (Kerberos SSP support)]))
 AC_ARG_WITH(gstreamer, AS_HELP_STRING([--without-gstreamer],[do not use GStreamer (codecs support)]))
 AC_ARG_WITH(inotify,   AS_HELP_STRING([--without-inotify],[do not use inotify (filesystem change notifications)]))
+AC_ARG_WITH(io_uring,  AS_HELP_STRING([--without-io_uring],[do not use io_uring (high-performance async I/O)]))
 AC_ARG_WITH(krb5,      AS_HELP_STRING([--without-krb5],[do not use krb5 (Kerberos)]))
 AC_ARG_WITH(mingw,     AS_HELP_STRING([--without-mingw],[do not use the MinGW cross-compiler]))
 AC_ARG_WITH(netapi,    AS_HELP_STRING([--without-netapi],[do not use the Samba NetAPI library]))
@@ -1195,6 +1196,14 @@ AS_VAR_IF([with_pthread],[no],[],
 WINE_ERROR_WITH(pthread,[test "x$ac_cv_func_pthread_create" != xyes -a "x$PTHREAD_LIBS" = x],
 [pthread ${notice_platform}development files not found.
 Wine cannot support threads without libpthread.])
+
+dnl **** Check for io_uring ****
+
+AS_VAR_IF([with_io_uring],[no],[],
+          [AC_CHECK_HEADER([liburing.h],
+                          [WINE_CHECK_SONAME(uring,io_uring_queue_init,,,)],,,)])
+WINE_NOTICE_WITH(io_uring,[test "x$ac_cv_lib_soname_uring" = "x"],
+[liburing ${notice_platform}development files not found, io_uring support won't be available.])
 
 dnl **** Check for X11 ****
 
