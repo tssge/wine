@@ -56,6 +56,7 @@ static int has_splice = 0;
 static int has_read_fixed = 0;
 static int has_write_fixed = 0;
 static int has_register_buffers = 0;
+static int use_odirect = 0;  /* O_DIRECT support for unbuffered I/O */
 
 /* Pipe pool for splice operations */
 #define PIPE_POOL_SIZE 32
@@ -496,7 +497,27 @@ void wineio_process_completions(void)
     }
 }
 
-/* Submit I/O request via io_uring */
+/* Cancel io_uring operation */
+int wineio_cancel_async(struct async *async)
+{
+    struct io_uring_sqe *sqe;
+    
+    if (!uring_supported) return 0;
+    
+    /* Get submission queue entry for cancellation */
+    sqe = io_uring_get_sqe(&ring);
+    if (!sqe) return 0;
+    
+    /* Prepare async cancel operation */
+    io_uring_prep_cancel(sqe, async, 0);
+    io_uring_sqe_set_data(sqe, NULL);  /* No completion data needed */
+    
+    /* Submit the cancellation */
+    if (io_uring_submit(&ring) < 0)
+        return 0;
+    
+    return 1;  /* Cancellation submitted */
+}
 int wineio_submit_io(struct async *async, struct fd *fd, int is_read, 
                      ULONG count, LARGE_INTEGER offset)
 {

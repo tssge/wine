@@ -2369,7 +2369,19 @@ void default_fd_queue_async( struct fd *fd, struct async *async, int type, int c
     set_error( STATUS_PENDING );
 }
 
-/* io_uring enhanced queue_async - attempts io_uring first, falls back to default */
+/* io_uring enhanced cancel_async - attempts io_uring cancellation first */
+void io_uring_fd_cancel_async( struct fd *fd, struct async *async )
+{
+    /* Try io_uring cancellation first */
+    if (wineio_cancel_async(async))
+    {
+        /* io_uring cancellation submitted successfully */
+        return;
+    }
+    
+    /* Fall back to default cancellation */
+    default_fd_cancel_async(fd, async);
+}
 void io_uring_fd_queue_async( struct fd *fd, struct async *async, int type, int count )
 {
     LARGE_INTEGER offset = { .QuadPart = 0 };

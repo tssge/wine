@@ -128,6 +128,7 @@ extern void no_fd_get_volume_info( struct fd *fd, struct async *async, unsigned 
 extern void no_fd_ioctl( struct fd *fd, ioctl_code_t code, struct async *async );
 extern void default_fd_ioctl( struct fd *fd, ioctl_code_t code, struct async *async );
 extern void default_fd_cancel_async( struct fd *fd, struct async *async );
+extern void io_uring_fd_cancel_async( struct fd *fd, struct async *async );
 extern void no_fd_queue_async( struct fd *fd, struct async *async, int type, int count );
 extern void default_fd_queue_async( struct fd *fd, struct async *async, int type, int count );
 extern void io_uring_fd_queue_async( struct fd *fd, struct async *async, int type, int count );

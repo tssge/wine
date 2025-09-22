@@ -37,6 +37,9 @@ extern void wineio_process_completions(void);
 extern int wineio_submit_io(struct async *async, struct fd *fd, int is_read, 
                            ULONG count, LARGE_INTEGER offset);
 
+/* Cancel I/O request via io_uring */
+extern int wineio_cancel_async(struct async *async);
+
 /* Cleanup io_uring engine */
 extern void wineio_cleanup(void);
 
