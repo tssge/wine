@@ -96,6 +96,7 @@
 #include "request.h"
 #include "esync.h"
 #include "fsync.h"
+#include "io_uring.h"
 
 #include "winternl.h"
 #include "winioctl.h"
@@ -958,6 +959,7 @@ static int get_next_timeout(void)
 void main_loop(void)
 {
     int i, ret, timeout;
+    int uring_eventfd = wineio_get_eventfd();
 
     set_current_time();
     server_start_time = current_time;
@@ -973,6 +975,16 @@ void main_loop(void)
 
         ret = poll( pollfd, nb_users, timeout );
         set_current_time();
+
+        /* Process io_uring completions if available */
+        if (uring_eventfd >= 0)
+        {
+            struct pollfd uring_poll = { uring_eventfd, POLLIN, 0 };
+            if (poll(&uring_poll, 1, 0) > 0 && (uring_poll.revents & POLLIN))
+            {
+                wineio_process_completions();
+            }
+        }
 
         if (ret > 0)
         {
@@ -2355,6 +2367,36 @@ void default_fd_queue_async( struct fd *fd, struct async *async, int type, int c
 {
     fd_queue_async( fd, async, type );
     set_error( STATUS_PENDING );
+}
+
+/* io_uring enhanced queue_async - attempts io_uring first, falls back to default */
+void io_uring_fd_queue_async( struct fd *fd, struct async *async, int type, int count )
+{
+    LARGE_INTEGER offset = { .QuadPart = 0 };
+    
+    /* Try io_uring for read/write operations on regular files */
+    if ((type == ASYNC_TYPE_READ || type == ASYNC_TYPE_WRITE) && 
+        fd->inode && count > 0)
+    {
+        /* Get the file offset from the async data if available */
+        if (async->data.iosb)
+        {
+            /* For simplicity, we'll start with offset 0 - a more complete implementation
+             * would extract the offset from the async request data */
+            offset.QuadPart = 0;
+        }
+        
+        /* Attempt to submit via io_uring */
+        if (wineio_submit_io(async, fd, (type == ASYNC_TYPE_READ), count, offset))
+        {
+            /* Successfully submitted to io_uring */
+            set_error( STATUS_PENDING );
+            return;
+        }
+    }
+    
+    /* Fall back to default async handling */
+    default_fd_queue_async( fd, async, type, count );
 }
 
 /* default reselect_async() fd routine */

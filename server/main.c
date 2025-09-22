@@ -37,6 +37,7 @@
 #include "security.h"
 #include "esync.h"
 #include "fsync.h"
+#include "io_uring.h"
 
 /* command-line options */
 int debug_level = 0;
@@ -212,6 +213,7 @@ error:
 
 static void sigterm_handler( int signum )
 {
+    wineio_cleanup();
     exit(1);  /* make sure atexit functions get called */
 }
 
@@ -240,6 +242,12 @@ int main( int argc, char *argv[] )
 
     if (!do_fsync() && !do_esync())
         fprintf( stderr, "wineserver: using server-side synchronization.\n" );
+
+    /* Initialize io_uring engine if available */
+    if (wineio_init())
+        fprintf( stderr, "wineserver: io_uring initialized for high-performance I/O.\n" );
+    else
+        fprintf( stderr, "wineserver: io_uring not available, using traditional I/O.\n" );
 
     if (debug_level) fprintf( stderr, "wineserver: starting (pid=%ld)\n", (long) getpid() );
     set_current_time();

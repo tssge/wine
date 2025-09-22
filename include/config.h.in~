@@ -816,9 +816,6 @@
 /* Define to the soname of the libSDL2 library. */
 #undef SONAME_LIBSDL2
 
-/* Define to the soname of the liburing library. */
-#undef SONAME_LIBURING
-
 /* Define to the soname of the libv4l2 library. */
 #undef SONAME_LIBV4L2
 

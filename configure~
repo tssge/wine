@@ -956,7 +956,6 @@ with_gnutls
 with_gssapi
 with_gstreamer
 with_inotify
-with_io_uring
 with_krb5
 with_mingw
 with_netapi
@@ -2576,7 +2575,6 @@ Optional Packages:
   --without-gssapi        do not use GSSAPI (Kerberos SSP support)
   --without-gstreamer     do not use GStreamer (codecs support)
   --without-inotify       do not use inotify (filesystem change notifications)
-  --without-io_uring      do not use io_uring (high-performance async I/O)
   --without-krb5          do not use krb5 (Kerberos)
   --without-mingw         do not use the MinGW cross-compiler
   --without-netapi        do not use the Samba NetAPI library
@@ -4464,13 +4462,6 @@ fi
 if test ${with_inotify+y}
 then :
   withval=$with_inotify;
-fi
-
-
-# Check whether --with-io_uring was given.
-if test ${with_io_uring+y}
-then :
-  withval=$with_io_uring;
 fi
 
 
@@ -13785,82 +13776,6 @@ then :
   *)   as_fn_error $? "pthread ${notice_platform}development files not found.
 Wine cannot support threads without libpthread.
 Use the --without-pthread option if you really want this." "$LINENO" 5 ;;
-esac
-
-fi
-
-
-if test "x$with_io_uring" = xno
-then :
-
-else $as_nop
-  ac_fn_c_check_header_compile "$LINENO" "liburing.h" "ac_cv_header_liburing_h" "$ac_includes_default"
-if test "x$ac_cv_header_liburing_h" = xyes
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for -luring" >&5
-printf %s "checking for -luring... " >&6; }
-if test ${ac_cv_lib_soname_uring+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_check_soname_save_LIBS=$LIBS
-LIBS="-luring  $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char io_uring_queue_init ();
-int
-main (void)
-{
-return io_uring_queue_init ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  case "$LIBEXT" in
-    dll) ac_cv_lib_soname_uring=`$ac_cv_path_LDD conftest.exe | grep "uring" | sed -e "s/dll.*/dll/"';2,$d'` ;;
-    dylib) ac_cv_lib_soname_uring=`$OTOOL -L conftest$ac_exeext | grep "liburing\\.[0-9A-Za-z.]*dylib" | sed -e "s/^.*\/\(liburing\.[0-9A-Za-z.]*dylib\).*$/\1/"';2,$d'` ;;
-    *) ac_cv_lib_soname_uring=`$READELF -d conftest$ac_exeext | grep "NEEDED.*liburing\\.$LIBEXT" | sed -e "s/^.*\\[\\(liburing\\.$LIBEXT[^	 ]*\\)\\].*$/\1/"';2,$d'`
-       if ${ac_cv_lib_soname_uring:+false} :
-then :
-  ac_cv_lib_soname_uring=`$LDD conftest$ac_exeext | grep "liburing\\.$LIBEXT" | sed -e "s/^.*\(liburing\.$LIBEXT[^	 ]*\).*$/\1/"';2,$d'`
-fi ;;
-  esac
-else $as_nop
-  ac_cv_lib_soname_uring=
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-  LIBS=$ac_check_soname_save_LIBS
-fi
-if ${ac_cv_lib_soname_uring:+false} :
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: not found" >&5
-printf "%s\n" "not found" >&6; }
-
-else $as_nop
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_soname_uring" >&5
-printf "%s\n" "$ac_cv_lib_soname_uring" >&6; }
-
-printf "%s\n" "#define SONAME_LIBURING \"$ac_cv_lib_soname_uring\"" >>confdefs.h
-
-
-fi
-fi
-
-fi
-if test "x$ac_cv_lib_soname_uring" = "x"
-then :
-  case "x$with_io_uring" in
-  x)   as_fn_append wine_notices "|liburing ${notice_platform}development files not found, io_uring support won't be available." ;;
-  xno) ;;
-  *)   as_fn_error $? "liburing ${notice_platform}development files not found, io_uring support won't be available.
-This is an error since --with-io_uring was requested." "$LINENO" 5 ;;
 esac
 
 fi
